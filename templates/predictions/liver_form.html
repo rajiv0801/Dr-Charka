@@ -1,0 +1,587 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% block title %}Liver Disease Prediction - Dr. Charaka{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        min-height: 100vh;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+        color: #1f2937;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .header p {
+        color: #6b7280;
+        font-size: 1.125rem;
+        font-weight: 400;
+    }
+
+    .card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .card-header {
+        background: #f8fafc;
+        border-bottom: 2px solid #e5e7eb;
+        padding: 1.5rem 2rem;
+    }
+
+    .card-title {
+        color: #1f2937;
+        font-size: 1.25rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-content {
+        padding: 2rem;
+    }
+
+    /* Patient Selection Styles */
+    .patient-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .patient-card {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: white;
+    }
+
+    .patient-card:hover {
+        border-color: #3b82f6;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .patient-card.selected {
+        border-color: #3b82f6;
+        background: #eff6ff;
+    }
+
+    .patient-info h3 {
+        color: #1f2937;
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .patient-info p {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    /* Form Styles */
+    .form-section {
+        margin-bottom: 2.5rem;
+    }
+
+    .section-title {
+        color: #1f2937;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .form-grid-2 {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+
+    .form-grid-3 {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-label {
+        color: #374151;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 1rem;
+        color: #1f2937;
+        background: white;
+        transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-input:invalid {
+        border-color: #ef4444;
+    }
+
+    .form-select {
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 1rem;
+        color: #1f2937;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .form-select:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .error-message {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .info-note {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .info-note p {
+        color: #0369a1;
+        font-size: 0.875rem;
+        margin: 0;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #e5e7eb;
+    }
+
+    .btn {
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        border: none;
+    }
+
+    .btn-primary {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #2563eb;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        border: 2px solid #e5e7eb;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+        color: #1f2937;
+        text-decoration: none;
+    }
+
+    .icon {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+    }
+
+    /* Patient Selection Hidden Input */
+    .patient-selection input[type="radio"] {
+        display: none;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .container {
+            padding: 1rem;
+        }
+
+        .header {
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .patient-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-grid-2,
+        .form-grid-3 {
+            grid-template-columns: 1fr;
+        }
+
+        .button-group {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn {
+            width: 100%;
+            max-width: 300px;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <h1>Liver Disease Prediction</h1>
+        <p>AI-powered diagnostic analysis for liver function assessment</p>
+    </div>
+
+    {% if show_patient_selection %}
+        <!-- Patient Selection -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <svg class="icon" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                    </svg>
+                    Select Patient
+                </h2>
+            </div>
+            <div class="card-content">
+                <form method="post" class="patient-selection">
+                    {% csrf_token %}
+                    <div class="patient-grid">
+                        {% for patient in patients %}
+                            <div class="patient-card" onclick="selectPatient('{{ patient.id }}')">
+                                <input type="radio" name="patient_id" value="{{ patient.id }}" id="patient_{{ patient.id }}">
+                                <div class="patient-info">
+                                    <h3>{{ patient.first_name }} {{ patient.last_name }}</h3>
+                                    <p>{{ patient.email|default:"No email provided" }}</p>
+                                    <p>Added: {{ patient.created_at|date:"M d, Y" }}</p>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p>No patients found. Please add patients first.</p>
+                        {% endfor %}
+                    </div>
+                    
+                    {% if patients %}
+                        <div class="button-group">
+                            <button type="submit" name="select_patient" class="btn btn-primary">
+                                <svg class="icon" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                                Continue with Selected Patient
+                            </button>
+                        </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- Patient Info -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <svg class="icon" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                    </svg>
+                    Patient Information
+                </h2>
+            </div>
+            <div class="card-content">
+                <p><strong>Name:</strong> {{ patient.first_name }} {{ patient.last_name }}</p>
+                <p><strong>Email:</strong> {{ patient.email|default:"Not provided" }}</p>
+            </div>
+        </div>
+
+        <!-- Prediction Form -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <svg class="icon" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Liver Function Analysis
+                </h2>
+            </div>
+            <div class="card-content">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Basic Information -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <svg class="icon" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                            </svg>
+                            Basic Information
+                        </h3>
+                        
+                        <div class="form-grid form-grid-2">
+                            <div class="form-group">
+                                <label for="{{ form.age.id_for_label }}" class="form-label">Age (years)</label>
+                                {{ form.age|add_class:"form-input" }}
+                                {% if form.age.errors %}
+                                    <div class="error-message">
+                                        <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                        {{ form.age.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ form.gender.id_for_label }}" class="form-label">Gender</label>
+                                {{ form.gender|add_class:"form-select" }}
+                                {% if form.gender.errors %}
+                                    <div class="error-message">
+                                        <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                        {{ form.gender.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Laboratory Values -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <svg class="icon" viewBox="0 0 20 20">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Laboratory Values
+                        </h3>
+                        
+                        <div class="form-grid form-grid-3">
+                            <div class="form-group">
+                                <label for="{{ form.total_bilirubin.id_for_label }}" class="form-label">Total Bilirubin (mg/dL)</label>
+                                {{ form.total_bilirubin|add_class:"form-input" }}
+                                {% if form.total_bilirubin.errors %}
+                                    <div class="error-message">{{ form.total_bilirubin.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ form.direct_bilirubin.id_for_label }}" class="form-label">Direct Bilirubin (mg/dL)</label>
+                                {{ form.direct_bilirubin|add_class:"form-input" }}
+                                {% if form.direct_bilirubin.errors %}
+                                    <div class="error-message">{{ form.direct_bilirubin.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ form.alkaline_phosphotase.id_for_label }}" class="form-label">Alkaline Phosphatase (IU/L)</label>
+                                {{ form.alkaline_phosphotase|add_class:"form-input" }}
+                                {% if form.alkaline_phosphotase.errors %}
+                                    <div class="error-message">{{ form.alkaline_phosphotase.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ form.alamine_aminotransferase.id_for_label }}" class="form-label">ALT/SGPT (IU/L)</label>
+                                {{ form.alamine_aminotransferase|add_class:"form-input" }}
+                                {% if form.alamine_aminotransferase.errors %}
+                                    <div class="error-message">{{ form.alamine_aminotransferase.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ form.aspartate_aminotransferase.id_for_label }}" class="form-label">AST/SGOT (IU/L)</label>
+                                {{ form.aspartate_aminotransferase|add_class:"form-input" }}
+                                {% if form.aspartate_aminotransferase.errors %}
+                                    <div class="error-message">{{ form.aspartate_aminotransferase.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ form.total_protiens.id_for_label }}" class="form-label">Total Proteins (g/dL)</label>
+                                {{ form.total_protiens|add_class:"form-input" }}
+                                {% if form.total_protiens.errors %}
+                                    <div class="error-message">{{ form.total_protiens.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ form.albumin.id_for_label }}" class="form-label">Albumin (g/dL)</label>
+                                {{ form.albumin|add_class:"form-input" }}
+                                {% if form.albumin.errors %}
+                                    <div class="error-message">{{ form.albumin.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="{{ form.albumin_and_globulin_ratio.id_for_label }}" class="form-label">A/G Ratio</label>
+                                {{ form.albumin_and_globulin_ratio|add_class:"form-input" }}
+                                {% if form.albumin_and_globulin_ratio.errors %}
+                                    <div class="error-message">{{ form.albumin_and_globulin_ratio.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="info-note">
+                            <p><strong>Note:</strong> Ensure all laboratory values are entered accurately. Reference ranges may vary between laboratories. Consult your healthcare provider for proper interpretation of results.</p>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" name="predict" class="btn btn-primary">
+                            <svg class="icon" viewBox="0 0 20 20">
+                                <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"/>
+                                <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"/>
+                            </svg>
+                            Analyze Liver Function
+                        </button>
+                        <a href="{% url 'predictor:liver_prediction' %}" class="btn btn-secondary">
+                            <svg class="icon" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+                            </svg>
+                            Back to Patient Selection
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Patient selection functionality
+    let selectedPatientId = null;
+
+    window.selectPatient = function(patientId) {
+        // Remove previous selection
+        document.querySelectorAll('.patient-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+
+        // Select current patient
+        const selectedCard = document.querySelector(`label[for="patient_${patientId}"]`)?.parentElement || 
+                             document.querySelector(`input[value="${patientId}"]`)?.closest('.patient-card');
+        
+        if (selectedCard) {
+            selectedCard.classList.add('selected');
+        }
+
+        // Set the radio button
+        const radioButton = document.querySelector(`input[value="${patientId}"]`);
+        if (radioButton) {
+            radioButton.checked = true;
+        }
+
+        selectedPatientId = patientId;
+    };
+
+    // Form validation enhancement
+    const form = document.querySelector('form[method="post"]');
+    if (form) {
+        const inputs = form.querySelectorAll('.form-input, .form-select');
+        
+        inputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value && this.checkValidity()) {
+                    this.style.borderColor = '#10b981';
+                } else if (!this.checkValidity()) {
+                    this.style.borderColor = '#ef4444';
+                }
+            });
+
+            input.addEventListener('input', function() {
+                if (this.style.borderColor === '#ef4444') {
+                    this.style.borderColor = '#e5e7eb';
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

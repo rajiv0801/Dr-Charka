@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New Login Notification</title>
+    <style>
+        body {
+            background-color: #f4f4f7;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            font-size: 26px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .sub-header {
+            text-align: center;
+            font-size: 16px;
+            color: #888888;
+            margin-bottom: 30px;
+        }
+        .content {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #444444;
+        }
+        .details {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-size: 15px;
+        }
+        .details div {
+            margin-bottom: 10px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 12px;
+            color: #999999;
+        }
+        .warning {
+            color: #e74c3c;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Dr. Charaka</div>
+        <div class="sub-header">Security Alert - New Login Detected</div>
+        <div class="content">
+            Hello {{ user.first_name|default:user.username }},
+            <br><br>
+            We noticed a new login to your account. Here are the details:
+            <div class="details">
+                <div><strong>Date & Time:</strong> {{ login_time }}</div>
+                <div><strong>IP Address:</strong> {{ ip }}</div>
+                <div><strong>Location:</strong> {{ location }}</div>
+            </div>
+            If this was <strong>you</strong>, no further action is needed.<br>
+            <span class="warning">If this was not you, please change your password immediately and secure your account.</span>
+        </div>
+        <div class="footer">
+            &copy; {{ current_year }} Dr. Charaka. All rights reserved.<br>
+            This is an automated security notification.
+        </div>
+    </div>
+</body>
+</html>

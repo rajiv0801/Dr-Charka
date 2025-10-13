@@ -1,0 +1,1076 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Dr. Charaka{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        background-color: var(--gray-50);
+        min-height: 100vh;
+        padding-top: 2rem;
+    }
+
+    .sidebar-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        position: sticky;
+        top: 100px;
+    }
+
+    .sidebar-header {
+        background: var(--primary);
+        color: var(--white);
+        padding: 1.5rem;
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+        text-align: center;
+    }
+
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.75rem;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .sidebar-nav {
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    .nav-item {
+        margin: 0;
+        border-bottom: 1px solid var(--gray-100);
+    }
+
+    .nav-item:last-child {
+        border-bottom: none;
+    }
+
+    .nav-link {
+        color: var(--gray-600);
+        padding: 1rem 1.5rem;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+
+    .nav-link:hover {
+        color: var(--primary);
+        background-color: var(--gray-50);
+    }
+
+    .nav-link.logout-link {
+        color: var(--danger);
+    }
+
+    .nav-link.logout-link:hover {
+        color: var(--danger);
+        background-color: rgba(255, 59, 48, 0.05);
+    }
+
+    .nav-link i {
+        width: 18px;
+        margin-right: 0.75rem;
+        font-size: 1rem;
+    }
+
+    /* Stats Cards */
+    .stats-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        text-align: center;
+        padding: 2rem 1.5rem;
+    }
+
+    .stats-icon {
+        width: 50px;
+        height: 50px;
+        background: var(--primary);
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: var(--white);
+        font-size: 1.25rem;
+    }
+
+    .stats-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-title {
+        color: var(--gray-600);
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    /* Appointment specific styles */
+    .appointment-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--primary);
+    }
+
+    .appointment-card.urgent {
+        border-left-color: var(--danger);
+    }
+
+    .appointment-card.medium {
+        border-left-color: #ff9500;
+    }
+
+    .appointment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .appointment-patient {
+        font-weight: 600;
+        color: var(--gray-900);
+        font-size: 1.1rem;
+    }
+
+    .appointment-time {
+        background: var(--gray-100);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius);
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .appointment-details {
+        color: var(--gray-600);
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+    }
+
+    .appointment-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-status {
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius);
+        font-size: 0.75rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-confirm {
+        background: var(--success);
+        color: var(--white);
+    }
+
+    .btn-cancel {
+        background: var(--danger);
+        color: var(--white);
+    }
+
+    .btn-complete {
+        background: var(--primary);
+        color: var(--white);
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-confirmed {
+        background: #d1edff;
+        color: #0969da;
+    }
+
+    .status-cancelled {
+        background: #ffeaea;
+        color: #d1242f;
+    }
+
+    .status-completed {
+        background: #dafbe1;
+        color: #1a7f37;
+    }
+
+    .urgency-high {
+        color: var(--danger);
+        font-weight: 600;
+    }
+
+    .urgency-medium {
+        color: #ff9500;
+        font-weight: 600;
+    }
+
+    .urgency-low {
+        color: var(--success);
+        font-weight: 600;
+    }
+
+    /* Tab Navigation */
+    .tab-nav {
+        display: flex;
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+        overflow: hidden;
+    }
+
+    .tab-button {
+        background: none;
+        border: none;
+        padding: 1rem 1.5rem;
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--gray-600);
+        flex: 1;
+        text-align: center;
+        transition: all 0.2s;
+    }
+
+    .tab-button.active {
+        background: var(--primary);
+        color: var(--white);
+    }
+
+    .tab-content {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-top: none;
+        border-radius: 0 0 var(--radius-md) var(--radius-md);
+        min-height: 400px;
+    }
+
+    .tab-pane {
+        display: none;
+        padding: 1.5rem;
+    }
+
+    .tab-pane.active {
+        display: block;
+    }
+
+    /* Content Cards */
+    .content-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 1.5rem;
+    }
+
+    .card-header-custom {
+        background: var(--gray-50);
+        border-bottom: 1px solid var(--gray-200);
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .card-header-custom h5 {
+        margin: 0;
+        font-weight: 600;
+        color: var(--gray-900);
+        font-size: 1rem;
+        flex: 1;
+    }
+
+    .toggle-form-btn {
+        background: var(--primary);
+        color: var(--white);
+        border: none;
+        border-radius: var(--radius);
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .toggle-form-btn:hover {
+        background: var(--primary-hover);
+    }
+
+    .form-container {
+        display: none;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .form-container.active {
+        display: block;
+    }
+
+    .form-row {
+        margin-bottom: 1rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        display: block;
+    }
+
+    .form-control, .form-select {
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius);
+        padding: 0.75rem;
+        font-size: 0.875rem;
+        width: 100%;
+        background: var(--white);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        outline: none;
+    }
+
+    .form-actions {
+        padding: 1rem 1.5rem;
+        background: var(--gray-50);
+        border-top: 1px solid var(--gray-200);
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+    }
+
+    .btn-submit {
+        background: var(--primary);
+        color: var(--white);
+        border: none;
+        border-radius: var(--radius);
+        padding: 0.75rem 1.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-submit:hover {
+        background: var(--primary-hover);
+    }
+
+    .btn-cancel {
+        background: var(--gray-200);
+        color: var(--gray-700);
+        border: none;
+        border-radius: var(--radius);
+        padding: 0.75rem 1.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-cancel:hover {
+        background: var(--gray-300);
+    }
+
+    /* Table Styles */
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .table-modern {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+
+    .table-modern thead th {
+        background: var(--gray-50);
+        border-bottom: 1px solid var(--gray-200);
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+        color: var(--gray-700);
+        text-align: left;
+        font-size: 0.8125rem;
+    }
+
+    .table-modern tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--gray-100);
+        vertical-align: middle;
+    }
+
+    .table-modern tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    .table-modern tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .patient-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .patient-avatar {
+        width: 35px;
+        height: 35px;
+        background: var(--gray-200);
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gray-500);
+        font-size: 0.875rem;
+    }
+
+    .patient-details h6 {
+        margin: 0;
+        font-weight: 600;
+        color: var(--gray-900);
+    }
+
+    .patient-details small {
+        color: var(--gray-500);
+        font-size: 0.75rem;
+    }
+
+    .btn-delete {
+        background: var(--danger);
+        color: var(--white);
+        border: none;
+        border-radius: var(--radius);
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+        cursor: pointer;
+    }
+
+    .btn-delete:hover {
+        background: #dc2626;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: var(--gray-500);
+    }
+
+    .empty-state i {
+        font-size: 2.5rem;
+        color: var(--gray-300);
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h6 {
+        color: var(--gray-600);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: var(--gray-500);
+        font-size: 0.875rem;
+        margin: 0;
+    }
+
+    /* Error States */
+    .form-control.is-invalid {
+        border-color: var(--danger);
+    }
+
+    .invalid-feedback {
+        color: var(--danger);
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .sidebar-card {
+            position: relative;
+            top: 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header-custom {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .table-container {
+            font-size: 0.8125rem;
+        }
+
+        .table-modern thead th,
+        .table-modern tbody td {
+            padding: 0.5rem;
+        }
+
+        .patient-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .appointment-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container-fluid px-4">
+        <div class="row g-4">
+            <!-- Sidebar -->
+            <div class="col-lg-3">
+                <div class="sidebar-card">
+                    <div class="sidebar-header">
+                        <div class="user-avatar">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <h5 class="mb-1">Welcome Back</h5>
+                        <p class="mb-0" style="opacity: 0.8;">{{ user.get_full_name }}</p>
+                    </div>
+                    <nav class="sidebar-nav">
+                        <li class="nav-item">
+                            <a href="{% url 'accounts:change_password' %}" class="nav-link">
+                                <i class="fas fa-key"></i>Change Password
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'accounts:edit_profile' %}" class="nav-link">
+                                <i class="fas fa-user-edit"></i>Edit Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'accounts:logout' %}" class="nav-link logout-link">
+                                <i class="fas fa-sign-out-alt"></i>Logout
+                            </a>
+                        </li>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-lg-9">
+                {% if user.is_doctor %}
+                    <!-- Stats Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                <div class="stats-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stats-number">{{ patients.count }}</div>
+                                <p class="stats-title">Total Patients</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                <div class="stats-icon">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="stats-number">{{ appointments.count }}</div>
+                                <p class="stats-title">Total Appointments</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                <div class="stats-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="stats-number">{{ pending_appointments.count }}</div>
+                                <p class="stats-title">Pending Appointments</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                <div class="stats-icon">
+                                    <i class="fas fa-calendar-day"></i>
+                                </div>
+                                <div class="stats-number">{{ todays_appointments.count }}</div>
+                                <p class="stats-title">Today's Appointments</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Navigation -->
+                    <div class="content-card">
+                        <div class="tab-nav">
+                            <button class="tab-button active" onclick="switchTab('appointments')">
+                                <i class="fas fa-calendar-alt me-2"></i>Appointments
+                            </button>
+                            <button class="tab-button" onclick="switchTab('patients')">
+                                <i class="fas fa-users me-2"></i>Patients
+                            </button>
+                        </div>
+
+                        <div class="tab-content">
+                            <!-- Appointments Tab -->
+                            <div id="appointments-tab" class="tab-pane active">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-calendar-alt me-2"></i>Appointment Management
+                                </h5>
+                                
+                                <!-- Appointment Filters -->
+                                <div class="mb-3">
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-outline-primary active" onclick="filterAppointments('all')">All</button>
+                                        <button type="button" class="btn btn-outline-primary" onclick="filterAppointments('today')">Today</button>
+                                        <button type="button" class="btn btn-outline-warning" onclick="filterAppointments('pending')">Pending</button>
+                                        <button type="button" class="btn btn-outline-success" onclick="filterAppointments('confirmed')">Confirmed</button>
+                                    </div>
+                                </div>
+
+                                <!-- Appointments List -->
+                                <div id="appointments-container">
+                                    {% for appointment in appointments %}
+                                    <div class="appointment-card {% if appointment.urgency == 'HIGH' %}urgent{% elif appointment.urgency == 'MEDIUM' %}medium{% endif %}" 
+                                         data-status="{{ appointment.status|lower }}" 
+                                         data-date="{{ appointment.appointment_date|date:'Y-m-d' }}">
+                                        <div class="appointment-header">
+                                            <div>
+                                                <div class="appointment-patient">{{ appointment.patient_name }}</div>
+                                                <div class="appointment-details">
+                                                    <strong>Contact:</strong> {{ appointment.patient.contact_number }} | {{ appointment.patient.email }}
+                                                </div>
+                                            </div>
+                                            <div class="appointment-time">
+                                                {{ appointment.appointment_date|date:"M d, Y" }} at {{ appointment.appointment_time|time:"h:i A" }}
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="appointment-details">
+                                            <strong>Reason:</strong> {{ appointment.reason }}<br>
+                                            <strong>Urgency:</strong> <span class="urgency-{{ appointment.urgency|lower }}">{{ appointment.get_urgency_display }}</span><br>
+                                            <strong>Status:</strong> <span class="status-badge status-{{ appointment.status|lower }}">{{ appointment.get_status_display }}</span>
+                                        </div>
+
+                                        {% if appointment.status == 'PENDING' %}
+                                        <div class="appointment-actions">
+                                            <button class="btn-status btn-confirm" onclick="updateAppointmentStatus({{ appointment.id }}, 'CONFIRMED')">
+                                                <i class="fas fa-check me-1"></i>Confirm
+                                            </button>
+                                            <button class="btn-status btn-cancel" onclick="updateAppointmentStatus({{ appointment.id }}, 'CANCELLED')">
+                                                <i class="fas fa-times me-1"></i>Cancel
+                                            </button>
+                                        </div>
+                                        {% elif appointment.status == 'CONFIRMED' %}
+                                        <div class="appointment-actions">
+                                            <button class="btn-status btn-complete" onclick="updateAppointmentStatus({{ appointment.id }}, 'COMPLETED')">
+                                                <i class="fas fa-check-double me-1"></i>Mark Complete
+                                            </button>
+                                            <button class="btn-status btn-cancel" onclick="updateAppointmentStatus({{ appointment.id }}, 'CANCELLED')">
+                                                <i class="fas fa-times me-1"></i>Cancel
+                                            </button>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% empty %}
+                                    <div class="empty-state">
+                                        <i class="fas fa-calendar-times"></i>
+                                        <h6>No Appointments Found</h6>
+                                        <p>Appointments booked through the Telegram bot will appear here.</p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Patients Tab -->
+                            <div id="patients-tab" class="tab-pane">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5>
+                                        <i class="fas fa-users me-2"></i>Patient Management
+                                    </h5>
+                                    <button type="button" class="toggle-form-btn" onclick="toggleAddPatientForm()">
+                                        <i class="fas fa-plus me-1"></i>Add Patient
+                                    </button>
+                                </div>
+                                
+                                <!-- Add Patient Form (Hidden by default) -->
+                                <div class="form-container" id="addPatientForm">
+                                    <form method="post" novalidate>
+                                        {% csrf_token %}
+                                        <div class="p-4">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <div class="form-row">
+                                                        <label class="form-label" for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+                                                        {{ form.first_name }}
+                                                        {% if form.first_name.errors %}
+                                                            <div class="invalid-feedback">
+                                                                {% for error in form.first_name.errors %}{{ error }}{% endfor %}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-row">
+                                                        <label class="form-label" for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+                                                        {{ form.last_name }}
+                                                        {% if form.last_name.errors %}
+                                                            <div class="invalid-feedback">
+                                                                {% for error in form.last_name.errors %}{{ error }}{% endfor %}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-row">
+                                                        <label class="form-label" for="{{ form.date_of_birth.id_for_label }}">{{ form.date_of_birth.label }}</label>
+                                                        {{ form.date_of_birth }}
+                                                        {% if form.date_of_birth.errors %}
+                                                            <div class="invalid-feedback">
+                                                                {% for error in form.date_of_birth.errors %}{{ error }}{% endfor %}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-row">
+                                                        <label class="form-label" for="{{ form.gender.id_for_label }}">{{ form.gender.label }}</label>
+                                                        {{ form.gender }}
+                                                        {% if form.gender.errors %}
+                                                            <div class="invalid-feedback">
+                                                                {% for error in form.gender.errors %}{{ error }}{% endfor %}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-row">
+                                                        <label class="form-label" for="{{ form.contact_number.id_for_label }}">{{ form.contact_number.label }}</label>
+                                                        {{ form.contact_number }}
+                                                        {% if form.contact_number.errors %}
+                                                            <div class="invalid-feedback">
+                                                                {% for error in form.contact_number.errors %}{{ error }}{% endfor %}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-row">
+                                                        <label class="form-label" for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                                                        {{ form.email }}
+                                                        {% if form.email.errors %}
+                                                            <div class="invalid-feedback">
+                                                                {% for error in form.email.errors %}{{ error }}{% endfor %}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="form-row">
+                                                        <label class="form-label" for="{{ form.address.id_for_label }}">{{ form.address.label }}</label>
+                                                        {{ form.address }}
+                                                        {% if form.address.errors %}
+                                                            <div class="invalid-feedback">
+                                                                {% for error in form.address.errors %}{{ error }}{% endfor %}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn-submit">
+                                                <i class="fas fa-save me-1"></i>Add Patient
+                                            </button>
+                                            <button type="button" class="btn-cancel" onclick="toggleAddPatientForm()">
+                                                <i class="fas fa-times me-1"></i>Cancel
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- Patients Table -->
+                                <div class="table-container">
+                                    {% if patients %}
+                                    <table class="table-modern">
+                                        <thead>
+                                            <tr>
+                                                <th>Patient</th>
+                                                <th>Contact</th>
+                                                <th>Age</th>
+                                                <th>Gender</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for patient in patients %}
+                                            <tr>
+                                                <td>
+                                                    <div class="patient-info">
+                                                        <div class="patient-avatar">
+                                                            {{ patient.first_name|first }}{{ patient.last_name|first }}
+                                                        </div>
+                                                        <div class="patient-details">
+                                                            <h6>{{ patient.first_name }} {{ patient.last_name }}</h6>
+                                                            <small>ID: {{ patient.id }}</small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div>{{ patient.contact_number }}</div>
+                                                    <small class="text-muted">{{ patient.email }}</small>
+                                                </td>
+                                                <td>{{ patient.age|default:"N/A" }}</td>
+                                                <td>{{ patient.get_gender_display|default:"N/A" }}</td>
+                                                <td>
+                                                    <button class="btn-delete" onclick="deletePatient({{ patient.id }})">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    {% else %}
+                                    <div class="empty-state">
+                                        <i class="fas fa-user-plus"></i>
+                                        <h6>No Patients Found</h6>
+                                        <p>Add patients manually or they will appear when registered through the system.</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                {% else %}
+                    <!-- Patient Dashboard -->
+                    <div class="content-card">
+                        <div class="card-header-custom">
+                            <h5>
+                                <i class="fas fa-calendar-alt me-2"></i>My Appointments
+                            </h5>
+                        </div>
+                        
+                        <div class="p-4">
+                            {% if appointments %}
+                                {% for appointment in appointments %}
+                                <div class="appointment-card {% if appointment.urgency == 'HIGH' %}urgent{% elif appointment.urgency == 'MEDIUM' %}medium{% endif %}">
+                                    <div class="appointment-header">
+                                        <div>
+                                            <div class="appointment-patient">Dr. {{ appointment.doctor.get_full_name }}</div>
+                                            <div class="appointment-details">
+                                                <strong>Date:</strong> {{ appointment.appointment_date|date:"M d, Y" }} at {{ appointment.appointment_time|time:"h:i A" }}
+                                            </div>
+                                        </div>
+                                        <div class="appointment-time">
+                                            <span class="status-badge status-{{ appointment.status|lower }}">{{ appointment.get_status_display }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="appointment-details">
+                                        <strong>Reason:</strong> {{ appointment.reason }}<br>
+                                        <strong>Urgency:</strong> <span class="urgency-{{ appointment.urgency|lower }}">{{ appointment.get_urgency_display }}</span>
+                                        {% if appointment.notes %}
+                                        <br><strong>Doctor's Notes:</strong> {{ appointment.notes }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-calendar-times"></i>
+                                <h6>No Appointments Found</h6>
+                                <p>Your appointments will appear here. Use the Telegram bot to book appointments.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success/Error Messages -->
+{% comment %} {% if messages %}
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 11">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %} {% endcomment %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Tab switching functionality
+function switchTab(tabName) {
+    // Hide all tab panes
+    document.querySelectorAll('.tab-pane').forEach(pane => {
+        pane.classList.remove('active');
+    });
+    
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active');
+    });
+    
+    // Show selected tab pane and activate button
+    document.getElementById(tabName + '-tab').classList.add('active');
+    event.target.classList.add('active');
+}
+
+// Toggle add patient form
+function toggleAddPatientForm() {
+    const form = document.getElementById('addPatientForm');
+    form.classList.toggle('active');
+    
+    const button = document.querySelector('.toggle-form-btn');
+    if (form.classList.contains('active')) {
+        button.innerHTML = '<i class="fas fa-times me-1"></i>Cancel';
+    } else {
+        button.innerHTML = '<i class="fas fa-plus me-1"></i>Add Patient';
+        // Reset form
+        form.querySelector('form').reset();
+    }
+}
+
+// Filter appointments
+function filterAppointments(filter) {
+    const appointments = document.querySelectorAll('.appointment-card');
+    const buttons = document.querySelectorAll('.btn-group .btn');
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Update button states
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    appointments.forEach(appointment => {
+        let show = false;
+        const status = appointment.dataset.status;
+        const date = appointment.dataset.date;
+        
+        switch(filter) {
+            case 'all':
+                show = true;
+                break;
+            case 'today':
+                show = date === today;
+                break;
+            case 'pending':
+                show = status === 'pending';
+                break;
+            case 'confirmed':
+                show = status === 'confirmed';
+                break;
+        }
+        
+        appointment.style.display = show ? 'block' : 'none';
+    });
+}
+
+// Update appointment status
+async function updateAppointmentStatus(appointmentId, newStatus) {
+    if (!confirm(`Are you sure you want to ${newStatus.toLowerCase()} this appointment?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/update-appointment-status/${appointmentId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                status: newStatus
+            })
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Failed to update appointment status.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while updating the appointment.');
+    }
+}
+
+// Delete patient
+async function deletePatient(patientId) {
+    if (!confirm('Are you sure you want to delete this patient? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/delete-patient/${patientId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        });
+        
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Failed to delete patient.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while deleting the patient.');
+    }
+}
+
+// Auto-dismiss alerts after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            alert.classList.remove('show');
+            setTimeout(() => alert.remove(), 150);
+        });
+    }, 5000);
+});
+
+// Real-time updates (optional - requires WebSocket)
+function setupRealTimeUpdates() {
+    // This would connect to WebSocket for real-time appointment updates
+    // Implementation depends on your WebSocket setup
+}
+</script>
+{% endblock %}

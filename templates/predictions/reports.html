@@ -1,0 +1,788 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Prediction Reports - Dr. Charaka{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: 1.5rem;
+        text-align: center;
+        color: var(--gray-900);
+        box-shadow: var(--shadow-sm);
+        transition: all 0.15s ease;
+    }
+
+    .stats-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-1px);
+    }
+
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-label {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .filter-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        color: var(--gray-900);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .form-control, .form-select {
+        background: var(--white);
+        border: 1px solid var(--gray-300);
+        color: var(--gray-900);
+        border-radius: var(--radius);
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    .form-control:focus, .form-select:focus {
+        background: var(--white);
+        border-color: var(--primary);
+        color: var(--gray-900);
+        box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        outline: none;
+    }
+
+    .form-control::placeholder {
+        color: var(--gray-500);
+    }
+
+    .form-label {
+        color: var(--gray-700);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .report-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--gray-900);
+        box-shadow: var(--shadow-sm);
+        transition: all 0.15s ease;
+    }
+
+    .report-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-1px);
+    }
+
+    .prediction-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-block;
+    }
+
+    .badge-benign {
+        background: var(--success);
+        color: white;
+    }
+
+    .badge-malignant {
+        background: var(--danger);
+        color: white;
+    }
+
+    .badge-low-risk {
+        background: var(--success);
+        color: white;
+    }
+
+    .badge-high-risk {
+        background: var(--warning);
+        color: white;
+    }
+
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+    }
+
+    .status-success { background-color: var(--success); }
+    .status-warning { background-color: var(--warning); }
+    .status-danger { background-color: var(--danger); }
+
+    .btn-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        margin: 0 3px;
+        font-size: 0.875rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .btn-view {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-view:hover {
+        background: var(--primary-hover);
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .btn-download {
+        background: var(--success);
+        color: white;
+    }
+
+    .btn-download:hover {
+        background: #28a745;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .btn-gradient {
+        background: var(--primary);
+        border: none;
+        color: white;
+        padding: 0.625rem 1.25rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.15s ease;
+    }
+
+    .btn-gradient:hover {
+        background: var(--primary-hover);
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    .btn-glass {
+        background: var(--gray-100);
+        border: 1px solid var(--gray-300);
+        color: var(--gray-700);
+        padding: 0.625rem 1.25rem;
+        border-radius: var(--radius);
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.15s ease;
+    }
+
+    .btn-glass:hover {
+        background: var(--gray-200);
+        color: var(--gray-800);
+        transform: translateY(-1px);
+    }
+
+    .pagination {
+        justify-content: center;
+    }
+
+    .page-link {
+        background: var(--white);
+        border: 1px solid var(--gray-300);
+        color: var(--gray-700);
+        margin: 0 2px;
+        border-radius: var(--radius);
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        transition: all 0.15s ease;
+    }
+
+    .page-link:hover {
+        background: var(--gray-100);
+        color: var(--gray-800);
+        border-color: var(--gray-400);
+    }
+
+    .page-item.active .page-link {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+    }
+
+    .modal-content {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        color: var(--gray-900);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .modal-header {
+        border-bottom: 1px solid var(--gray-200);
+        padding: 1.25rem;
+    }
+
+    .modal-title {
+        color: var(--gray-900) !important;
+        font-weight: 600;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        border-top: 1px solid var(--gray-200);
+        padding: 1rem 1.25rem;
+    }
+
+    .btn-close {
+        filter: none;
+        background: none;
+        border: none;
+        font-size: 1.25rem;
+        color: var(--gray-500);
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: var(--gray-600);
+        font-size: 0.875rem;
+    }
+
+    .detail-value {
+        color: var(--gray-900);
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+
+    .no-reports {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--gray-600);
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+    }
+
+    .no-reports i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: var(--gray-400);
+    }
+
+    .no-reports h4 {
+        color: var(--gray-900);
+        margin-bottom: 1rem;
+    }
+
+    .glass-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Form Select Options */
+    select {
+        background-color: var(--white);
+        color: var(--gray-900);
+        border: 1px solid var(--gray-300);
+    }
+
+    option {
+        background-color: var(--white);
+        color: var(--gray-900);
+        padding: 8px;
+    }
+
+    /* Text color fixes */
+    .text-white {
+        color: var(--gray-900) !important;
+    }
+
+    .text-white-50 {
+        color: var(--gray-600) !important;
+    }
+
+    .report-breakdown {
+        font-size: 0.875rem;
+    }
+
+    .report-breakdown .d-flex {
+        padding: 0.25rem 0;
+    }
+
+    .report-breakdown span {
+        color: var(--gray-900) !important;
+    }
+
+    .report-breakdown .text-white-50 {
+        color: var(--gray-600) !important;
+    }
+
+    .report-breakdown .fw-bold {
+        color: var(--gray-900) !important;
+    }
+
+    /* Page header */
+    .display-5 {
+        color: var(--gray-900) !important;
+        font-weight: 700;
+    }
+
+    .lead {
+        color: var(--gray-600) !important;
+        font-size: 1.1rem;
+    }
+
+    /* Report card text */
+    .report-card h5 {
+        color: var(--gray-900) !important;
+        margin-bottom: 0.5rem;
+    }
+
+    .report-card small {
+        color: var(--gray-600) !important;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .stats-number {
+            font-size: 2rem;
+        }
+        
+        .report-card {
+            padding: 1rem;
+        }
+        
+        .filter-card {
+            padding: 1rem;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            font-size: 0.8rem;
+        }
+    }
+
+    /* Alert Styles */
+    .alert-danger {
+        background: rgba(255, 59, 48, 0.1);
+        border: 1px solid rgba(255, 59, 48, 0.3);
+        color: var(--danger);
+        border-radius: var(--radius);
+    }
+
+    /* Spinner */
+    .spinner-border {
+        color: var(--primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Page Header -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="glass-card p-4 text-center">
+                <h1 class="display-5 fw-bold mb-2">
+                    <i class="fas fa-chart-line me-3"></i>Prediction Reports
+                </h1>
+                <p class="lead">Manage and review all patient prediction reports</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ total_reports }}</div>
+                <div class="stats-label">Total Reports</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ total_patients }}</div>
+                <div class="stats-label">Patients</div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="stats-card">
+                <h6 class="mb-3" style="color: var(--gray-900);">Reports by Type</h6>
+                <div class="report-breakdown">
+                    {% for type_name, count in reports_by_type.items %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span style="color: var(--gray-600);">{{ type_name }}</span>
+                            <span class="fw-bold" style="color: var(--gray-900);">{{ count }}</span>
+                        </div>
+                    {% empty %}
+                        <span style="color: var(--gray-600);">No reports available</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-card">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="patient" class="form-label">Patient</label>
+                <select name="patient" id="patient" class="form-select">
+                    <option value="">All Patients</option>
+                    {% for patient in patients %}
+                        <option value="{{ patient.id }}" {% if current_filters.patient == patient.id|stringformat:"s" %}selected{% endif %}>
+                            {{ patient.first_name }} {{ patient.last_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="prediction_type" class="form-label">Prediction Type</label>
+                <select name="prediction_type" id="prediction_type" class="form-select">
+                    <option value="">All Types</option>
+                    {% for type_code, type_name in prediction_types %}
+                        <option value="{{ type_code }}" {% if current_filters.prediction_type == type_code %}selected{% endif %}>
+                            {{ type_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="date_from" class="form-label">From Date</label>
+                <input type="date" name="date_from" id="date_from" class="form-control" value="{{ current_filters.date_from }}">
+            </div>
+            <div class="col-md-2">
+                <label for="date_to" class="form-label">To Date</label>
+                <input type="date" name="date_to" id="date_to" class="form-control" value="{{ current_filters.date_to }}">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-gradient w-100">
+                    <i class="fas fa-filter me-2"></i>Filter
+                </button>
+            </div>
+        </form>
+        
+        <!-- Search Bar -->
+        <div class="row mt-3">
+            <div class="col-md-8">
+                <form method="GET" class="d-flex">
+                    {% for key, value in current_filters.items %}
+                        {% if value and key != 'search' %}
+                            <input type="hidden" name="{{ key }}" value="{{ value }}">
+                        {% endif %}
+                    {% endfor %}
+                    <input type="text" name="search" class="form-control me-2" placeholder="Search by patient name, email, or prediction type..." value="{{ current_filters.search }}">
+                    <button type="submit" class="btn btn-glass">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'predictor:reports_view' %}" class="btn btn-glass">
+                    <i class="fas fa-times me-2"></i>Clear Filters
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reports List -->
+    <div class="row">
+        <div class="col-12">
+            {% if reports %}
+                {% for report in reports %}
+                    <div class="report-card">
+                        <div class="row align-items-center">
+                            <div class="col-md-3">
+                                <h5 class="mb-1">{{ report.patient.first_name }} {{ report.patient.last_name }}</h5>
+                                <small>
+                                    <i class="fas fa-envelope me-1"></i>{{ report.patient.email }}
+                                </small>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="prediction-badge 
+                                    {% if report.prediction_type == 'breast_cancer' %}
+                                        {% if 'Benign' in report.prediction_data.prediction %}badge-benign{% else %}badge-malignant{% endif %}
+                                    {% elif report.prediction_type == 'heart_disease' %}
+                                        badge-high-risk
+                                    {% else %}
+                                        badge-low-risk
+                                    {% endif %}">
+                                    {{ report.get_prediction_type_display }}
+                                </div>
+                                <div class="mt-1">
+                                    <small>
+                                        {% if report.prediction_data.prediction %}
+                                            Result: {{ report.prediction_data.prediction }}
+                                        {% endif %}
+                                        {% if report.prediction_data.confidence %}
+                                            ({{ report.prediction_data.confidence }}% confidence)
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <small>
+                                    <i class="fas fa-calendar me-1"></i>{{ report.created_at|date:"M d, Y" }}<br>
+                                    <i class="fas fa-clock me-1"></i>{{ report.created_at|time:"g:i A" }}
+                                </small>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-1">
+                                    <span class="status-indicator {% if report.pdf_generated %}status-success{% else %}status-warning{% endif %}"></span>
+                                    <small>PDF: {% if report.pdf_generated %}Generated{% else %}Pending{% endif %}</small>
+                                </div>
+                                <div>
+                                    <span class="status-indicator {% if report.email_sent %}status-success{% else %}status-danger{% endif %}"></span>
+                                    <small>Email: {% if report.email_sent %}Sent{% else %}Not Sent{% endif %}</small>
+                                </div>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <button class="btn-icon btn-view" onclick="viewReport({{ report.id }})" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                {% if report.pdf_file %}
+                                    <a href="{{ report.pdf_file.url }}" class="btn-icon btn-download" target="_blank" title="Download PDF">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                
+                <!-- Pagination -->
+                {% if reports.has_other_pages %}
+                    <nav aria-label="Reports pagination" class="mt-4">
+                        <ul class="pagination">
+                            {% if reports.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% for key, value in current_filters.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">First</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ reports.previous_page_number }}{% for key, value in current_filters.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+                                </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">{{ reports.number }} of {{ reports.paginator.num_pages }}</span>
+                            </li>
+                            
+                            {% if reports.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ reports.next_page_number }}{% for key, value in current_filters.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ reports.paginator.num_pages }}{% for key, value in current_filters.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="no-reports">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h4>No Reports Found</h4>
+                    <p>{% if current_filters.patient or current_filters.prediction_type or current_filters.search %}No reports match your current filters.{% else %}You haven't generated any prediction reports yet.{% endif %}</p>
+                    {% if current_filters.patient or current_filters.prediction_type or current_filters.search %}
+                        <a href="{% url 'predictor:reports_view' %}" class="btn btn-gradient mt-3">
+                            <i class="fas fa-times me-2"></i>Clear Filters
+                        </a>
+                    {% else %}
+                        <a href="{% url 'predictor:select_patient' %}" class="btn btn-gradient mt-3">
+                            <i class="fas fa-plus me-2"></i>Create New Prediction
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Report Details Modal -->
+<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportModalLabel">Report Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="reportModalBody">
+                <!-- Content will be loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-glass" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function viewReport(reportId) {
+    // Show loading in modal
+    document.getElementById('reportModalBody').innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2" style="color: var(--gray-600);">Loading report details...</p>
+        </div>
+    `;
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('reportModal'));
+    modal.show();
+    
+    // Fetch report details
+    fetch(`/predictor/report-details/${reportId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const report = data.report;
+                let predictionDetails = '';
+                
+                // Format prediction data based on type
+                if (report.prediction_data.prediction) {
+                    predictionDetails += `
+                        <div class="detail-item">
+                            <span class="detail-label">Prediction:</span>
+                            <span class="detail-value">${report.prediction_data.prediction}</span>
+                        </div>
+                    `;
+                }
+                
+                if (report.prediction_data.confidence) {
+                    predictionDetails += `
+                        <div class="detail-item">
+                            <span class="detail-label">Confidence:</span>
+                            <span class="detail-value">${report.prediction_data.confidence}%</span>
+                        </div>
+                    `;
+                }
+                
+                // Add other prediction details
+                for (const [key, value] of Object.entries(report.prediction_data)) {
+                    if (key !== 'prediction' && key !== 'confidence' && value !== null && value !== undefined) {
+                        predictionDetails += `
+                            <div class="detail-item">
+                                <span class="detail-label">${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</span>
+                                <span class="detail-value">${value}</span>
+                            </div>
+                        `;
+                    }
+                }
+                
+                document.getElementById('reportModalBody').innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="mb-3" style="color: var(--gray-900);"><i class="fas fa-user me-2"></i>Patient Information</h6>
+                            <div class="detail-item">
+                                <span class="detail-label">Name:</span>
+                                <span class="detail-value">${report.patient_name}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Email:</span>
+                                <span class="detail-value">${report.patient_email}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="mb-3" style="color: var(--gray-900);"><i class="fas fa-info-circle me-2"></i>Report Information</h6>
+                            <div class="detail-item">
+                                <span class="detail-label">Type:</span>
+                                <span class="detail-value">${report.prediction_type}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Created:</span>
+                                <span class="detail-value">${report.created_at}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">PDF Generated:</span>
+                                <span class="detail-value">${report.pdf_generated ? 'Yes' : 'No'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Email Sent:</span>
+                                <span class="detail-value">${report.email_sent ? 'Yes' : 'No'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="my-4" style="border-color: var(--gray-200);">
+                    <h6 class="mb-3" style="color: var(--gray-900);"><i class="fas fa-chart-bar me-2"></i>Prediction Details</h6>
+                    ${predictionDetails}
+                    ${report.pdf_url ? `
+                        <hr class="my-4" style="border-color: var(--gray-200);">
+                        <div class="text-center">
+                            <a href="${report.pdf_url}" class="btn btn-gradient" target="_blank">
+                                <i class="fas fa-download me-2"></i>Download PDF Report
+                            </a>
+                        </div>
+                    ` : ''}
+                `;
+            } else {
+                document.getElementById('reportModalBody').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error loading report details: ${data.error}
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            document.getElementById('reportModalBody').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Error loading report details. Please try again.
+                </div>
+            `;
+        });
+}
+
+// Auto-submit form when filters change
+document.addEventListener('DOMContentLoaded', function() {
+    const selects = document.querySelectorAll('#patient, #prediction_type');
+    selects.forEach(select => {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+});
+</script>
+{% endblock %}
