@@ -122,4 +122,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Support
 
-For support, contact me through [mail](mailto:rajivrajput2005@gmail.com) or open an issue in the repository.
+For support, contact me through this [Gmail](mailto:rajivrajput2005@gmail.com) or open an issue in the repository.
