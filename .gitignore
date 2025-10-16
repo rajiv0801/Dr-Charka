@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Database
+*.sqlite3
+
+# Media files
+media/
+
+# Static files
+static/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Local development settings
+local_settings.py
+
+# Compiled Python files
+*.pyc
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
