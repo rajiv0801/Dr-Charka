@@ -6,8 +6,14 @@ from accounts.models import Patient
 import os
 
 class BreastCancerPrediction(models.Model):
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='breast_cancer_predictions')
-    doctor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='breast_cancer_predictions', db_index=True)
+    doctor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_index=True)
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['created_at']),
+            models.Index(fields=['prediction']),
+        ]
     
     # Mean features
     mean_radius = models.FloatField()

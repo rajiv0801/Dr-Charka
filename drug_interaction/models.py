@@ -12,6 +12,13 @@ class DrugInteractionCheck(models.Model):
         ('SEVERE', 'Severe Risk'),
     ]
     
+    class Meta:
+        indexes = [
+            models.Index(fields=['created_at']),
+            models.Index(fields=['severity_level']),
+            models.Index(fields=['interaction_found']),
+        ]
+    
     doctor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='drug_checks')
     patient_name = models.CharField(max_length=200, blank=True)
     drugs_checked = models.JSONField()  # Store list of drugs checked
